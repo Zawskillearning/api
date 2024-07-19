@@ -28,7 +28,7 @@ def download_audio():
     if not song_name:
         return jsonify({"error": "Please provide a song name"}), 400
 
-    return jsonify({"download_link": audio_url})
+    return jsonify({"image": video_url})
 
 if __name__ == '__main__':
     app.run(debug=True)
