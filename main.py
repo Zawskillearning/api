@@ -14,19 +14,12 @@ def search_video(song_name):
         if data:
             video_url = data["url"]
             return video_url
-        return None
-    except requests.RequestException as e:
-        print(f"HTTP Request failed: {e}")
-        return None
-    except ValueError as e:
-        print(f"Error decoding JSON: {e}")
-        return None
 #Host it in Vercel.com
 @app.route('/ai', methods=['GET'])
 def download_audio():
     song_name = request.args.get('prompt')
     if not song_name:
-        return jsonify({"error": "Please provide a song name"}), 400
+        return jsonify({"error": "Please provide a /ai?prompt=question"}), 400
 
     return jsonify({"image": video_url})
 
