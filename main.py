@@ -14,8 +14,7 @@ def search_video(song_name):
         if data:
             video_url = data["url"]
             return video_url
-#Host it in Vercel.com
-@app.route('/ai', methods=['GET'])
+#Host it in Vercel.co
 def download_audio():
     song_name = request.args.get('prompt')
     if not song_name:
