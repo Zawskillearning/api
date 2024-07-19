@@ -15,7 +15,6 @@ def search_video(song_name):
             video_url = data["url"]
             return video_url
 #Host it in Vercel.co
-def download_audio():
     song_name = request.args.get('prompt')
     if not song_name:
         return jsonify({"error": "Please provide a /ai?prompt=question"}), 400
