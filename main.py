@@ -41,7 +41,6 @@ headers = {
     try:
         response = requests.post(url, data=payload, headers=headers)
 if response.status_code == 200:
-    try:
         data = response.json()
         soup = BeautifulSoup(data['data'], 'html.parser')
         links = soup.find_all('a', class_='tik-button-dl')
