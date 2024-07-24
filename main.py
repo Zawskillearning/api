@@ -19,6 +19,7 @@ url = "https://savetik.co/api/ajaxSearch"
 payload = f"q={query}&lang=en"
 
 
+session = requests.Session()
 
 headers = {
     'User-Agent': ua.random,  # Use a random user agent from fake_useragent
@@ -39,7 +40,7 @@ headers = {
 
 
     try:
-        response = requests.post(url, data=payload, headers=headers)
+        response = session.post(url, data=payload, headers=headers)
 if response.status_code == 200:
         data = response.json()
         soup = BeautifulSoup(data['data'], 'html.parser')
