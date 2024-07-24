@@ -22,16 +22,6 @@ def search_video(song_name):
         print(f"Error decoding JSON: {e}")
         return None
 
-def extract_audio(video_url):
-    try:
-        yt = YouTube(video_url)
-        audio_stream = yt.streams.filter(only_audio=True).first()
-        if audio_stream:
-            return audio_stream.url
-        return None
-    except Exception as e:
-        print(f"Error extracting audio: {e}")
-        return None
 #Host it in Vercel.com
 @app.route('/apiurl', methods=['GET'])
 def download_audio():
@@ -43,11 +33,8 @@ def download_audio():
     if not video_url:
         return jsonify({"error": "No video found or video is blocked"}), 404
 
-    audio_url = extract_audio(video_url)
-    if not audio_url:
-        return jsonify({"error": "Audio extraction failed"}), 500
 
-    return jsonify({"download_link": audio_url})
+    return jsonify({"download_link": video_url})
 
 if __name__ == '__main__':
     app.run(debug=True)
