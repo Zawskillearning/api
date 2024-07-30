@@ -10,64 +10,80 @@ from fake_useragent import UserAgent  # Use fake_useragent for user agent genera
 from bs4 import BeautifulSoup
 import json
 import os
+import re
 app = Flask(__name__)
 
-def search_video(song_name):
-    query = song_name.replace(' ', '+')
-    ua = UserAgent()
-url = "https://savetik.co/api/ajaxSearch"
-payload = f"q={query}&lang=en"
 
-
-session = requests.Session()
-
-headers = {
-    'User-Agent': ua.random,  # Use a random user agent from fake_useragent
-    'Content-Type': "application/x-www-form-urlencoded",
-    'sec-ch-ua': "\"Google Chrome\";v=\"113\", \"Chromium\";v=\"113\", \"Not-A.Brand\";v=\"24\"",
-    'dnt': "1",
-    'sec-ch-ua-mobile': "?1",
-    'x-requested-with': "XMLHttpRequest",
-    'sec-ch-ua-platform': "\"Android\"",
-    'origin': "https://savetik.co",
-    'sec-fetch-site': "same-origin",
-    'sec-fetch-mode': "cors",
-    'sec-fetch-dest': "empty",
-    'referer': "https://savetik.co/en2",
-    'accept-language': "ar,en-US;q=0.9,en;q=0.8"
-}
-
-
-
+def get_spotify_download_link(song_name):
+  def get_download_link(songurl):
     try:
-        response = session.post(url, data=payload, headers=headers)
-if response.status_code == 200:
-        data = response.json()
-        soup = BeautifulSoup(data['data'], 'html.parser')
-        links = soup.find_all('a', class_='tik-button-dl')
-        if len(links) >= 2:
-            link = links[1]['href']
-         
-        else:
-            print("Error: No valid download link found.")
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
-else:
-    jsonify({"error":"Request failed with status code {response.status_code}").400
-
+      initial_url = "https://spotifymate.com/"
+      response_initial = requests.get(initial_url)
+      response_initial.raise_for_status()
+      cookies = response_initial.cookies
+      soup_initial = BeautifulSoup(response_initial.text, 'html.parser')
+      hidden_inputs = soup_initial.select('form#get_video input[type=hidden]')
+      input_data = {}
+      for input_field in hidden_inputs:
+        input_name = input_field.get('name')
+        input_value = input_field.get('value')
+        if input_name and input_value:
+          input_data[input_name] = input_value
+      url_second = 'https://spotifymate.com/action'
+      data_second = {'url': songurl, **input_data}
+      response_second = requests.post(url_second,cookies=cookies,data=data_second)
+      response_second.raise_for_status()
+      second_soup = BeautifulSoup(response_second.text, 'html.parser')
+      download_div = second_soup.find('div', {'class': 'abuttons mb-0'})
+      if download_div and download_div.a:
+        download_link = download_div.a.get('href')
+        return download_link
+      else:
+        return None
+    except Exception as e:
+      return None
+  try:
+    url = "https://open.spotify.com/"
+    response = requests.get(url)
+    response.raise_for_status()
+    cookies = response.cookies
+    access_token = ''
+    if response.status_code == 200:
+      match = re.search(r'"accessToken":"([^"]+)"', response.text)
+      if match:
+        access_token = match.group(1)
+      else:
+        return None
+    else:
+      return None
+    url = "https://api-partner.spotify.com/pathfinder/v1/query"
+    headers = {"Content-Type": "application/json","Authorization": "Bearer " + access_token}
+    data = {"operationName": "searchDesktop","variables": {"searchTerm": search_term,"offset": 0,"limit": 10,"numberOfTopResults": 5,"includeAudiobooks": True},"extensions": {"persistedQuery": {"version":1,"sha256Hash":"a04b1320754996f10f3b4ceea825fa7c4ba5c76b7d1c8603a0be350783d8f709"}}}
+    response = requests.post(url, json=data, headers=headers, cookies=cookies)
+    response.raise_for_status()
+    match = re.search(r'"spotify:track:(.*?)"', response.text)
+    uri_value = match.group(1)
+    max_attempts = 2
+    url = 'https://open.spotify.com/track/' + uri_value
+    for attempt in range(1, max_attempts + 1):
+      download_link = get_download_link(url)
+      text_to_remove = 'SpotifyMate.com%20-%20'
+      if text_to_remove in download_link:
+        download_link = download_link.replace(text_to_remove, '')
+      if download_link:
+        return download_link
+  except Exception as e:
+    return None
+  return None
 #Host it in Vercel.com
-@app.route('/apiurl', methods=['GET'])
-def download_audio():
+@app.route('/yagami', methods=['GET'])
     song_name = request.args.get('songname')
+download_link = get_spotify_download_link(song_name)
+jsonify({"download_url": download_link,"By": "t.me/Yagami_xlight"})
     if not song_name:
         return jsonify({"error": "Please provide a song name"}), 400
 
-    link = search_video(song_name)
-    if not link:
-        return jsonify({"error": "No video found or video is blocked"}), 404
-
-
-    return jsonify({"download_link": link})
+    
 
 if __name__ == '__main__':
     app.run(debug=True)
