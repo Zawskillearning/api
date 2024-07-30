@@ -76,7 +76,7 @@ def get_download_link(songurl):
 
 @app.route('/ygm', methods=['GET'])
 def get_download_link_api():
-    search_term = request.form.get('text')
+    search_term = request.form.get('search_term')
         download_link = get_spotify_download_link(search_term)
         if download_link:
             return jsonify({'download_link': download_link})
