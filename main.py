@@ -74,15 +74,17 @@ def get_download_link(songurl):
         return None
 
 
-@app.route('/ygm', methods=['GET'])
+@app.route('/get_download_link', methods=['GET'])
 def get_download_link_api():
-    search_term = request.form.get('search_term')
+    search_term = request.args.get('search_term')
+    if search_term:
         download_link = get_spotify_download_link(search_term)
         if download_link:
             return jsonify({'download_link': download_link})
         else:
             return jsonify({'error': 'Failed to find a download link.'}), 404
-    
+    else:
+        return jsonify({'error': 'Song name is required.'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
