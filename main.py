@@ -77,8 +77,7 @@ def get_spotify_download_link(query):
   return None
 #Host it in Vercel.com
 @app.route('/yagami', methods=['GET'])
-    song_name = request.args.get('songname')
-    query = song_name.replace(' ', '+')
+    query = "Hello"
 download_link = get_spotify_download_link(query)
 jsonify({"download_url": download_link,"By": "t.me/Yagami_xlight"})
     if not song_name:
