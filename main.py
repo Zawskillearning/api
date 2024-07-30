@@ -14,7 +14,7 @@ import re
 app = Flask(__name__)
 
 
-def get_spotify_download_link(song_name):
+def get_spotify_download_link(query):
   def get_download_link(songurl):
     try:
       initial_url = "https://spotifymate.com/"
@@ -78,7 +78,8 @@ def get_spotify_download_link(song_name):
 #Host it in Vercel.com
 @app.route('/yagami', methods=['GET'])
     song_name = request.args.get('songname')
-download_link = get_spotify_download_link(song_name)
+    query = song_name.replace(' ', '+')
+download_link = get_spotify_download_link(query)
 jsonify({"download_url": download_link,"By": "t.me/Yagami_xlight"})
     if not song_name:
         return jsonify({"error": "Please provide a song name"}), 400
